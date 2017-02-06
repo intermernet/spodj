@@ -15,7 +15,11 @@ class App extends Component{
                 nrgLow: 0.7,
                 nrgHigh: 0.9,
                 acoustLow: 0.7,
-                acoustHigh: 0.9
+                acoustHigh: 0.9,
+                liveLow: 0.7,
+                liveHigh: 0.9,
+                loudLow: 0.7,
+                loudHigh: 0.9
         };
     }
 

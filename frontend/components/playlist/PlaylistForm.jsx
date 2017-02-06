@@ -25,7 +25,7 @@ class PlaylistForm extends Component{
                                 }}
                             />
                         </div>*/}
-                        <div className='panel-heading'>
+                        <div>
                             <strong>BPM</strong>
                         </div>
                         <span>
@@ -62,7 +62,7 @@ class PlaylistForm extends Component{
                     </Col>
 					<Col md={6}>            
                     <div className='form-group'>
-                        <div className='panel-heading'>
+                        <div>
                             <strong>Danceability</strong>
                         </div>
                         <span>
@@ -104,7 +104,7 @@ class PlaylistForm extends Component{
 				<Row>
 					<Col md={6}>   
                     <div className='form-group'>
-                        <div className='panel-heading'>
+                        <div>
                             <strong>Energy</strong>
                         </div>
                         <span>
@@ -144,7 +144,7 @@ class PlaylistForm extends Component{
                     </Col>
 					<Col md={6}>            
                     <div className='form-group'>
-                        <div className='panel-heading'>
+                        <div>
                             <strong>Acousticness</strong>
                         </div>
                         <span>
@@ -183,6 +183,88 @@ class PlaylistForm extends Component{
                     </div>       
                     </Col>
                 </Row>
+				<Row>
+					<Col md={6}>   
+                    <div className='form-group'>
+                        <div>
+                            <strong>Liveness</strong>
+                        </div>
+                        <span>
+                            <NumericInput
+                                onChange={this.props.handleChange.bind(this, 'liveLow')}
+                                min={0.0}
+                                max={1.0}
+                                step={0.01}
+                                precision={2}
+                                value={this.props.liveLow}
+                                size={3}
+                            />
+                        </span>
+                        <span>
+                            <ReactBootstrapSlider
+                                value={[this.props.liveLow*100, this.props.liveHigh*100]}
+                                change={this.props.handleSliderChange.bind(this, 'liveLow', 'liveHigh', 0.01)}
+                                step={1}
+                                min={0}
+                                max={100}
+                                range='true'
+                                tooltip='hide'
+                            />
+                        </span>
+                        <span>
+                            <NumericInput
+                                onChange={this.props.handleChange.bind(this, 'liveHigh')}
+                                min={0.0}
+                                max={1.0}
+                                step={0.01}
+                                precision={2}
+                                value={this.props.liveHigh}
+                                size={3}
+                            />
+                        </span>
+                    </div>
+                    </Col>
+					<Col md={6}>            
+                    <div className='form-group'>
+                        <div>
+                            <strong>Loudness</strong>
+                        </div>
+                        <span>
+                            <NumericInput
+                                onChange={this.props.handleChange.bind(this, 'loudLow')}
+                                min={0.0}
+                                max={1.0}
+                                step={0.01}
+                                precision={2}
+                                value={this.props.loudLow}
+                                size={3}
+                            />
+                        </span>
+                        <span>
+                            <ReactBootstrapSlider
+                                value={[this.props.loudLow*100, this.props.loudHigh*100]}
+                                change={this.props.handleSliderChange.bind(this, 'loudLow', 'loudHigh', 0.01)}
+                                step={1}
+                                min={0}
+                                max={100}
+                                range='true'
+                                tooltip='hide'
+                            />
+                        </span>
+                        <span>
+                            <NumericInput
+                                onChange={this.props.handleChange.bind(this, 'loudHigh')}
+                                min={0.0}
+                                max={1.0}
+                                step={0.01}
+                                precision={2}
+                                value={this.props.loudHigh}
+                                size={3}
+                            />
+                        </span>
+                    </div>       
+                    </Col>
+                </Row>
                 </form>            
 			</Grid>
         )
@@ -198,6 +280,10 @@ PlaylistForm.propTypes = {
     nrgHigh: React.PropTypes.number.isRequired,
     acoustLow: React.PropTypes.number.isRequired,
     acoustHigh: React.PropTypes.number.isRequired,
+    liveLow: React.PropTypes.number.isRequired,
+    liveHigh: React.PropTypes.number.isRequired,
+    loudLow: React.PropTypes.number.isRequired,
+    loudHigh: React.PropTypes.number.isRequired,
     handleChange: React.PropTypes.func.isRequired,    
     handleSliderChange: React.PropTypes.func.isRequired
 }
