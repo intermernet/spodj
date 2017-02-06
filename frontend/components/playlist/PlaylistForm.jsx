@@ -85,6 +85,7 @@ class PlaylistForm extends Component{
                                 max={100}
                                 range='true'
                                 tooltip='hide'
+                                ticks = {[0, 100]}
                             />
                         </span>
                         <span>

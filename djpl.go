@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Intermernet/spotify"
 	"github.com/skratchdot/open-golang/open"
+	"github.com/zmb3/spotify"
 )
 
 const (
