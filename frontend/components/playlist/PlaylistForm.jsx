@@ -21,7 +21,6 @@ class PlaylistForm extends Component {
                         <Col md={12}>
                             <div>
                                 <MultiSelect
-                                    autofocus={true}
                                     style={{ width: '100%' }}
                                     placeholder="Select genres"
                                     options={

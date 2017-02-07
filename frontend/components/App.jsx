@@ -32,16 +32,20 @@ class App extends Component{
     }
 
     handleChange(name, value){
-        let state = this.state;
-        state[name] = value;
-        this.setState({state});
+        if (value != null) {
+            let state = this.state;
+            state[name] = value;
+            this.setState({state});
+        }
     }
 
     handleSliderChange(name1, name2, scale, value){
-        let state = this.state;
-        state[name1] = value.target.value[0]*scale;
-        state[name2] = value.target.value[1]*scale;
-        this.setState({state});
+        if (value != null) {
+            let state = this.state;
+            state[name1] = value.target.value[0]*scale;
+            state[name2] = value.target.value[1]*scale;
+            this.setState({state});
+        }
     }
 
     postForm(data){
