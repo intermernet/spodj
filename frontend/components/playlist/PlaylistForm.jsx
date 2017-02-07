@@ -7,10 +7,8 @@ import ReactSelectize, { MultiSelect } from 'react-selectize';
 class PlaylistForm extends Component {
     onSubmit(e) {
         e.preventDefault();
-        const node = this.refs.selectedGenres;
-        const data = node.value;
-        this.props.postForm(data);
-        //node.value = '';
+            var data = this.refs.genres;
+            this.props.postForm(data.state.values);
     }
 
     render() {
@@ -29,7 +27,7 @@ class PlaylistForm extends Component {
                                         })
                                     }
                                     maxValues={5}
-                                    ref='selectedGenres'
+                                    ref='genres'
                                 />
                             </div>
                         </Col>

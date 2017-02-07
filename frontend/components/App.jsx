@@ -49,7 +49,30 @@ class App extends Component{
     }
 
     postForm(data){
-        console.log(data);
+        var selectedGenres = [];
+        for(var i = 0; i < data.length; i++) {
+            selectedGenres[i] = data[i].value;
+        }
+        var postData = {
+                bpmLow: this.state.bpmLow,
+                bpmHigh: this.state.bpmHigh,
+                danceLow: this.state.danceLow,
+                danceHigh: this.state.danceHigh,
+                nrgLow: this.state.nrgLow,
+                nrgHigh: this.state.nrgHigh,
+                acoustLow: this.state.acoustLow,
+                acoustHigh: this.state.acoustHigh,
+                liveLow: this.state.liveLow,
+                liveHigh: this.state.liveHigh,
+                loudLow: this.state.loudLow,
+                loudHigh: this.state.loudHigh,
+                popLow: this.state.popLow,
+                popHigh: this.state.popHigh,
+                moodLow: this.state.moodLow,
+                moodHigh: this.state.moodHigh,
+                genres: selectedGenres
+        }
+        console.log(JSON.stringify(postData));
     }
 
     render(){
