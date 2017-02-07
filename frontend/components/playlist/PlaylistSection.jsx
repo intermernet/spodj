@@ -5,7 +5,7 @@ class PlaylistSection extends Component{
     render(){
         return (
             <div className='panel panel-primary'>
-                <div className='app-heading'>
+                <div>
                     <h1><strong>DJWeb</strong></h1>
                 </div>
                 <div className='panel-heading'>
@@ -33,8 +33,14 @@ PlaylistSection.propTypes = {
     liveHigh: React.PropTypes.number.isRequired,
     loudLow: React.PropTypes.number.isRequired,
     loudHigh: React.PropTypes.number.isRequired,
+    popLow: React.PropTypes.number.isRequired,
+    popHigh: React.PropTypes.number.isRequired,
+    moodLow: React.PropTypes.number.isRequired,
+    moodHigh: React.PropTypes.number.isRequired,
+    genres: React.PropTypes.array.isRequired,
     handleChange: React.PropTypes.func.isRequired,
-    handleSliderChange: React.PropTypes.func.isRequired
+    handleSliderChange: React.PropTypes.func.isRequired,
+    postForm: React.PropTypes.func.isRequired
 }
 
 export default PlaylistSection
