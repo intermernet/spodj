@@ -75,13 +75,13 @@ class App extends Component{
         }
         console.log(JSON.stringify(postData));
         //this.setState({initialState});
-        var request = new Request('http://localhost:9090/api', {
+        var request = new Request('https://spodj.intermer.net/api', {
             method: 'POST', 
 	        mode: 'no-cors', 
 	        //redirect: 'follow',
             body: JSON.stringify(postData),
             headers: new Headers({
-                'Access-Control-Allow-Origin': 'http://localhost:9090',
+                'Access-Control-Allow-Origin': 'https://lspodj.intermer.net',
                 'Content-Type': 'application/json'
             })
         });
