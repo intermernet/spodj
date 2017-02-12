@@ -2,7 +2,6 @@ import React, {Component} from 'react';
 import PlaylistSection from './playlist/PlaylistSection.jsx';
 
 const initialState = {
-                name: '',
                 bpmLow: 130,
                 bpmHigh: 150,
                 stepBPM: 1,
@@ -75,8 +74,21 @@ class App extends Component{
                 genres: selectedGenres
         }
         console.log(JSON.stringify(postData));
-        this.setState({initialState});
-    }
+        //this.setState({initialState});
+        var request = new Request('http://localhost:9090/api', {
+            method: 'POST', 
+	        mode: 'no-cors', 
+	        //redirect: 'follow',
+            body: JSON.stringify(postData),
+            headers: new Headers({
+                'Access-Control-Allow-Origin': 'http://localhost:9090',
+                'Content-Type': 'application/json'
+            })
+        });
+        fetch(request).then(function(response) {
+            console.log(response)
+        }); 
+}
 
     render(){
         return (

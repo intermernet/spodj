@@ -369,8 +369,6 @@ class PlaylistForm extends Component {
                         <Col md={12}>
                             <input
                                 placeholder='Playlist name'
-                                //onChange={this.props.handleChange.bind(this, 'name')}
-                                //value={this.props.name}
                                 ref='name'
                             />
                             <Button type="submit">Submit</Button>
@@ -383,7 +381,6 @@ class PlaylistForm extends Component {
 }
 
 PlaylistForm.propTypes = {
-    name: React.PropTypes.string.isRequired,
     bpmLow: React.PropTypes.number.isRequired,
     bpmHigh: React.PropTypes.number.isRequired,
     danceLow: React.PropTypes.number.isRequired,
