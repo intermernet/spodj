@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import PlaylistSection from './playlist/PlaylistSection.jsx';
 
 const initialState = {
+                name: '',
                 bpmLow: 130,
                 bpmHigh: 150,
                 stepBPM: 1,
@@ -50,10 +51,11 @@ class App extends Component{
 
     postForm(data){
         var selectedGenres = [];
-        for(var i = 0; i < data.length; i++) {
-            selectedGenres[i] = data[i].value;
+        for(var i = 0; i < data.genres.length; i++) {
+            selectedGenres[i] = data.genres[i].value;
         }
         var postData = {
+                name: data.name,
                 bpmLow: this.state.bpmLow,
                 bpmHigh: this.state.bpmHigh,
                 danceLow: this.state.danceLow,
@@ -73,6 +75,7 @@ class App extends Component{
                 genres: selectedGenres
         }
         console.log(JSON.stringify(postData));
+        this.setState({initialState});
     }
 
     render(){

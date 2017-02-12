@@ -21,6 +21,7 @@ class PlaylistSection extends Component{
 }
 
 PlaylistSection.propTypes = {
+    name: React.PropTypes.string.isRequired,
     bpmLow: React.PropTypes.number.isRequired,
     bpmHigh: React.PropTypes.number.isRequired,
     danceLow: React.PropTypes.number.isRequired,

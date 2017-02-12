@@ -7,8 +7,11 @@ import ReactSelectize, { MultiSelect } from 'react-selectize';
 class PlaylistForm extends Component {
     onSubmit(e) {
         e.preventDefault();
-            var data = this.refs.genres;
-            this.props.postForm(data.state.values);
+            var data = {
+                genres: this.refs.genres.state.values,
+                name: this.refs.name.value
+            }
+            this.props.postForm(data);
     }
 
     render() {
@@ -364,6 +367,12 @@ class PlaylistForm extends Component {
                     </Row>
                     <Row>
                         <Col md={12}>
+                            <input
+                                placeholder='Playlist name'
+                                //onChange={this.props.handleChange.bind(this, 'name')}
+                                //value={this.props.name}
+                                ref='name'
+                            />
                             <Button type="submit">Submit</Button>
                         </Col>
                     </Row>
@@ -374,6 +383,7 @@ class PlaylistForm extends Component {
 }
 
 PlaylistForm.propTypes = {
+    name: React.PropTypes.string.isRequired,
     bpmLow: React.PropTypes.number.isRequired,
     bpmHigh: React.PropTypes.number.isRequired,
     danceLow: React.PropTypes.number.isRequired,
