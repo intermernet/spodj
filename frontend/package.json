@@ -1,8 +1,8 @@
 {
-  "name": "djweb",
+  "name": "spodj",
   "version": "1.0.0",
-  "description": "Playlist Generator for Spotify",
-  "repository": "https://github.com/Intermernet/djweb.git",
+  "description": "Spotify DJ Playlist Generator",
+  "repository": "https://github.com/Intermernet/spodj.git",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
