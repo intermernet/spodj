@@ -78,10 +78,10 @@ class App extends Component{
         var request = new Request('https://spodj.intermer.net/api', {
             method: 'POST', 
 	        mode: 'no-cors', 
-	        //redirect: 'follow',
+	        redirect: 'follow',
             body: JSON.stringify(postData),
             headers: new Headers({
-                'Access-Control-Allow-Origin': 'https://lspodj.intermer.net',
+                'Access-Control-Allow-Origin': 'https://spodj.intermer.net',
                 'Content-Type': 'application/json'
             })
         });
