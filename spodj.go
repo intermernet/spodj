@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	redirectURI = "http://localhost:9090/callback"
+	redirectURI = "https://spodj.intermer.net/callback"
 	chars       = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	dateFormat  = "2006-01-02_03:04:05"
 )
@@ -123,7 +123,7 @@ func doAPI(w http.ResponseWriter, r *http.Request) {
 		}
 
 		log.Println("creating playlist")
-		plURL, err := client.createPlaylist(tracks)
+		plURL, err := client.createPlaylist(tracks, a.Name)
 		if err != nil {
 			log.Fatalf("could not create playlist %s", err)
 		}
@@ -160,17 +160,20 @@ type Playlist struct {
 	opts  *spotify.Options
 }
 
-func (client *Client) createPlaylist(pl *Playlist) (string, error) {
+func (client *Client) createPlaylist(pl *Playlist, name string) (string, error) {
 	user, err := client.CurrentUser()
 	if err != nil {
 		return "", fmt.Errorf("error getting user: %s", err)
 	}
-	t := time.Now()
-	var genres string
-	for _, genre := range pl.seeds.Genres {
-		genres += "_" + genre
+	if name == "" {
+		var genres string
+		for _, genre := range pl.seeds.Genres {
+			genres += "_" + genre
+		}
+		t := time.Now()
+		name = t.Format(dateFormat) + genres
 	}
-	list, err := client.CreatePlaylistForUser(user.ID, t.Format(dateFormat)+genres, false)
+	list, err := client.CreatePlaylistForUser(user.ID, name, false)
 	if err != nil {
 		return "", fmt.Errorf("error creating playlist for user: %s", err)
 	}
@@ -192,26 +195,25 @@ func (client *Client) createPlaylist(pl *Playlist) (string, error) {
 
 func (client *Client) getRecs(r APIReq) (*Playlist, error) {
 	seeds := spotify.Seeds{
-		//Genres: []string{"hip-hop"},
 		Genres: r.Genres,
 	}
 	attrs := spotify.NewTrackAttributes().
 		MinTempo(r.BPMLow).
 		MaxTempo(r.BPMHigh).
-		// MinDanceability(r.DanceLow).
-		// MaxDanceability(r.DanceHigh).
-		// MinEnergy(r.NRGLow).
-		// MaxEnergy(r.NRGHigh).
-		// MinAcousticness(r.AcoustLow).
-		// MaxAcousticness(r.AcoustHigh).
-		// MinLiveness(r.LiveLow).
-		// MaxLiveness(r.LiveHigh).
+		MinDanceability(r.DanceLow).
+		MaxDanceability(r.DanceHigh).
+		MinEnergy(r.NRGLow).
+		MaxEnergy(r.NRGHigh).
+		MinAcousticness(r.AcoustLow).
+		MaxAcousticness(r.AcoustHigh).
+		MinLiveness(r.LiveLow).
+		MaxLiveness(r.LiveHigh).
 		// MinLoudness(r.LoudLow).
 		// MaxLoudness(r.LoudHigh).
 		MinPopularity(r.PopLow).
-		MaxPopularity(r.PopHigh)
-		// MinValence(r.MoodLow).
-		// MaxValence(r.MoodHigh)
+		MaxPopularity(r.PopHigh).
+		MinValence(r.MoodLow).
+		MaxValence(r.MoodHigh)
 	country := "AU"
 	limit := 10
 	opts := &spotify.Options{

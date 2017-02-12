@@ -241,7 +241,7 @@ class PlaylistForm extends Component {
                                 </span>
                             </div>
                         </Col>
-                        <Col md={6}>
+                        {/*<Col md={6}>
                             <div className='form-group'>
                                 <div>
                                     <strong>Loudness</strong>
@@ -281,7 +281,7 @@ class PlaylistForm extends Component {
                                     />
                                 </span>
                             </div>
-                        </Col>
+                        </Col>*/}
                     </Row>
                     <Row>
                         <Col md={6}>
