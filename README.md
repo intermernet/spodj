@@ -1,1 +1,3 @@
-DJPL
+SpoDJ
+
+Spotify DJ Playlist Generator
