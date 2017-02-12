@@ -6,10 +6,10 @@ class PlaylistSection extends Component{
         return (
             <div className='panel panel-primary'>
                 <div>
-                    <h1><strong>DJWeb</strong></h1>
+                    <h1><strong>SpoDJ</strong></h1>
                 </div>
                 <div className='panel-heading'>
-                    <strong>Spotify Playlist Generator</strong>
+                    <strong>Spotify DJ Playlist Generator</strong>
                 </div>
                 <div className='panel-body playlists'>
                     <PlaylistForm {...this.props} />
