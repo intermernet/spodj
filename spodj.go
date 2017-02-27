@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -18,13 +20,19 @@ const (
 )
 
 var (
-	port        = ":9090"
-	baseURI     = "http://localhost" + port
+	port        int
+	baseURI     string
 	redirectURI = baseURI + "/callback"
 	scope       = []string{spotify.ScopeUserReadPrivate, spotify.ScopePlaylistModifyPrivate, spotify.ScopePlaylistReadPrivate}
 	auth        = spotify.NewAuthenticator(redirectURI, scope...)
 	clMap       = new(ClientMap)
 )
+
+func init() {
+	flag.IntVar(&port, "port", 9090, "TCP/IP Port to listen on")
+	flag.StringVar(&baseURI, "baseuri", "http://localhost", "Base URL to listen on")
+	clMap.list = make(map[string]Client)
+}
 
 // Client is a wrapped Spotify Client
 type Client struct {
@@ -75,7 +83,8 @@ type APIReq struct {
 }
 
 func main() {
-	clMap.list = make(map[string]Client)
+	flag.Parse()
+	p := strconv.Itoa(port)
 	mux := http.NewServeMux()
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{baseURI},
@@ -84,7 +93,7 @@ func main() {
 	mux.HandleFunc("/api", doAPI)
 	mux.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./frontend/"))))
 	handler := c.Handler(mux)
-	log.Fatal(http.ListenAndServe(port, handler))
+	log.Fatal(http.ListenAndServe(":"+p, handler))
 }
 
 func doAPI(w http.ResponseWriter, r *http.Request) {
