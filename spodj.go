@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/rs/cors"
@@ -22,13 +23,37 @@ var (
 	redirectURI = baseURI + "/callback"
 	scope       = []string{spotify.ScopeUserReadPrivate, spotify.ScopePlaylistModifyPrivate, spotify.ScopePlaylistReadPrivate}
 	auth        = spotify.NewAuthenticator(redirectURI, scope...)
+	clMap       = new(ClientMap)
 )
 
 // Client is a wrapped Spotify Client
 type Client struct {
 	a     *APIReq
-	state uuid.UUID
+	state string
 	*spotify.Client
+}
+
+type ClientMap struct {
+	sync.RWMutex
+	list map[string]Client
+}
+
+func (cm *ClientMap) Set(s string, c Client) {
+	cm.Lock()
+	defer cm.Unlock()
+	cm.list[s] = c
+}
+
+func (cm *ClientMap) Get(s string) Client {
+	cm.Lock()
+	defer cm.Unlock()
+	return cm.list[s]
+}
+
+func (cm *ClientMap) Delete(s string) {
+	cm.Lock()
+	defer cm.Unlock()
+	delete(cm.list, s)
 }
 
 // APIReq contains the playlist parameters
@@ -50,22 +75,23 @@ type APIReq struct {
 }
 
 func main() {
+	clMap.list = make(map[string]Client)
 	mux := http.NewServeMux()
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{baseURI},
 	})
-	client := &Client{
-		a:     &APIReq{},
-		state: uuid.NewV4(),
-	}
-	mux.HandleFunc("/callback", client.completeAuth)
-	mux.HandleFunc("/api", client.doAPI)
+	mux.HandleFunc("/callback", completeAuth)
+	mux.HandleFunc("/api", doAPI)
 	mux.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./frontend/"))))
 	handler := c.Handler(mux)
 	log.Fatal(http.ListenAndServe(port, handler))
 }
 
-func (c *Client) doAPI(w http.ResponseWriter, r *http.Request) {
+func doAPI(w http.ResponseWriter, r *http.Request) {
+	c := Client{
+		a:     &APIReq{},
+		state: uuid.NewV4().String(),
+	}
 	defer r.Body.Close()
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(c.a)
@@ -73,49 +99,40 @@ func (c *Client) doAPI(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "could not decode JSON", http.StatusInternalServerError)
 		log.Printf("could not decode JSON. %s", err)
 	}
-	js, err := json.MarshalIndent(c.a, "", "\t")
-	if err != nil {
-		http.Error(w, "could not marshal JSON", http.StatusInternalServerError)
-		log.Printf("could not marshal JSON %s\n", err)
-	}
-	log.Printf(string(js))
-	url := auth.AuthURL(c.state.String())
-	log.Printf("%s\n", url)
-	log.Println("redirecting...")
+	url := auth.AuthURL(c.state)
+	clMap.Set(c.state, c)
 	w.Write([]byte("{\"url\":\"" + url + "\"}"))
 }
 
-func (c *Client) completeAuth(w http.ResponseWriter, r *http.Request) {
-	log.Println("getting token...")
-	tok, err := auth.Token(c.state.String(), r)
+func completeAuth(w http.ResponseWriter, r *http.Request) {
+	c := clMap.Get(r.FormValue("state"))
+	tok, err := auth.Token(c.state, r)
 	if err != nil {
 		http.Error(w, "could not get token", http.StatusInternalServerError)
 		log.Printf("could not get token %s\n", err)
 	}
-	if st := r.FormValue("state"); st != c.state.String() {
+	if st := r.FormValue("state"); st != c.state {
 		http.NotFound(w, r)
 		log.Fatalf("state mismatch: %s != %s\n", st, c.state)
 	}
-	log.Println("authorizing token...")
 	cl := auth.NewClient(tok)
-	c = &Client{
+	c = Client{
 		c.a,
 		c.state,
 		&cl,
 	}
-	log.Println("getting recommendations")
 	pl, err := c.getRecs(c.a)
 	if err != nil {
 		http.Error(w, "could not get recommendations", http.StatusInternalServerError)
 		log.Fatalf("could not get recommendations %s", err)
 	}
-	log.Println("creating playlist")
 	plURL, err := c.createPlaylist(pl, c.a.Name)
 	if err != nil {
 		http.Error(w, "could not create playlist", http.StatusInternalServerError)
 		log.Printf("could not create playlist %s", err)
 	}
 	log.Printf("%s\n", plURL)
+	clMap.Delete(c.state)
 	http.Redirect(w, r, baseURI, http.StatusFound)
 }
 
@@ -125,7 +142,7 @@ type Playlist struct {
 	seeds spotify.Seeds
 }
 
-func (c *Client) createPlaylist(pl *Playlist, name string) (string, error) {
+func (c Client) createPlaylist(pl *Playlist, name string) (string, error) {
 	user, err := c.CurrentUser()
 	if err != nil {
 		return "", fmt.Errorf("error getting user: %s", err)
@@ -157,7 +174,7 @@ func (c *Client) createPlaylist(pl *Playlist, name string) (string, error) {
 	return list.ExternalURLs["spotify"], nil
 }
 
-func (c *Client) getRecs(r *APIReq) (*Playlist, error) {
+func (c Client) getRecs(r *APIReq) (*Playlist, error) {
 	seeds := spotify.Seeds{
 		Genres: r.Genres,
 	}
