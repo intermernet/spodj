@@ -43,39 +43,39 @@ class PlaylistForm extends Component {
                         </Col>
                     </Row>
                     <Row>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <div>
                                 <strong>BPM</strong>
                             </div>
                         </Col>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <div>
                                 <strong>Danceability</strong>
                             </div>
                         </Col>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <div>
                                 <strong>Energy</strong>
                             </div>
                         </Col>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <div>
                                 <strong>Acousticness</strong>
                             </div>
                         </Col>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <div>
                                 <strong>Popularity</strong>
                             </div>
                         </Col>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <div>
                                 <strong>Mood</strong>
                             </div>
                         </Col>
                     </Row>
                     <Row>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <span>
                                 <NumericInput
                                     onChange={this.props.handleChange.bind(this, 'bpmHigh')}
@@ -86,7 +86,7 @@ class PlaylistForm extends Component {
                                 />
                             </span>
                         </Col>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <span>
                                 <NumericInput
                                     onChange={this.props.handleChange.bind(this, 'danceHigh')}
@@ -99,7 +99,7 @@ class PlaylistForm extends Component {
                                 />
                             </span>
                         </Col>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <span>
                                 <NumericInput
                                     onChange={this.props.handleChange.bind(this, 'nrgHigh')}
@@ -112,7 +112,7 @@ class PlaylistForm extends Component {
                                 />
                             </span>
                         </Col>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <span>
                                 <NumericInput
                                     onChange={this.props.handleChange.bind(this, 'acoustHigh')}
@@ -125,7 +125,7 @@ class PlaylistForm extends Component {
                                 />
                             </span>
                         </Col>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <span>
                                 <NumericInput
                                     onChange={this.props.handleChange.bind(this, 'popHigh')}
@@ -137,7 +137,7 @@ class PlaylistForm extends Component {
                                 />
                             </span>
                         </Col>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <span>
                                 <NumericInput
                                     onChange={this.props.handleChange.bind(this, 'moodHigh')}
@@ -152,7 +152,7 @@ class PlaylistForm extends Component {
                         </Col>
                     </Row>
                     <Row>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <span className='slider'>
                                 <ReactBootstrapSlider
                                     value={[this.props.bpmLow, this.props.bpmHigh]}
@@ -168,7 +168,7 @@ class PlaylistForm extends Component {
                                 />
                             </span>
                         </Col>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <span className='slider'>
                                 <ReactBootstrapSlider
                                     value={[this.props.danceLow * 100, this.props.danceHigh * 100]}
@@ -184,7 +184,7 @@ class PlaylistForm extends Component {
                                 />
                             </span>
                         </Col>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <span className='slider'>
                                 <ReactBootstrapSlider
                                     value={[this.props.nrgLow * 100, this.props.nrgHigh * 100]}
@@ -200,7 +200,7 @@ class PlaylistForm extends Component {
                                 />
                             </span>
                         </Col>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <span className='slider'>
                                 <ReactBootstrapSlider
                                     value={[this.props.acoustLow * 100, this.props.acoustHigh * 100]}
@@ -216,7 +216,7 @@ class PlaylistForm extends Component {
                                 />
                             </span>
                         </Col>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <span className='slider'>
                                 <ReactBootstrapSlider
                                     value={[this.props.popLow, this.props.popHigh]}
@@ -232,7 +232,7 @@ class PlaylistForm extends Component {
                                 />
                             </span>
                         </Col>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <span className='slider'>
                                 <ReactBootstrapSlider
                                     value={[this.props.moodLow * 100, this.props.moodHigh * 100]}
@@ -250,7 +250,7 @@ class PlaylistForm extends Component {
                         </Col>
                     </Row>
                     <Row>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <span>
                                 <NumericInput
                                     onChange={this.props.handleChange.bind(this, 'bpmLow')}
@@ -261,7 +261,7 @@ class PlaylistForm extends Component {
                                 />
                             </span>
                         </Col>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <span>
                                 <NumericInput
                                     onChange={this.props.handleChange.bind(this, 'danceLow')}
@@ -274,7 +274,7 @@ class PlaylistForm extends Component {
                                 />
                             </span>
                         </Col>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <span>
                                 <NumericInput
                                     onChange={this.props.handleChange.bind(this, 'nrgLow')}
@@ -287,7 +287,7 @@ class PlaylistForm extends Component {
                                 />
                             </span>
                         </Col>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <span>
                                 <NumericInput
                                     onChange={this.props.handleChange.bind(this, 'acoustLow')}
@@ -300,7 +300,7 @@ class PlaylistForm extends Component {
                                 />
                             </span>
                         </Col>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <span>
                                 <NumericInput
                                     onChange={this.props.handleChange.bind(this, 'popLow')}
@@ -312,7 +312,7 @@ class PlaylistForm extends Component {
                                 />
                             </span>
                         </Col>
-                        <Col md={2}>
+                        <Col md={2} xs={2}>
                             <span>
                                 <NumericInput
                                     onChange={this.props.handleChange.bind(this, 'moodLow')}
