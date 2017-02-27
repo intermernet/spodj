@@ -3,15 +3,22 @@ import { Grid, Row, Col, Button } from 'react-bootstrap';
 import NumericInput from 'react-numeric-input';
 import ReactBootstrapSlider from 'react-bootstrap-slider';
 import ReactSelectize, { MultiSelect } from 'react-selectize';
+import AlertContainer from 'react-alert';
 
 class PlaylistForm extends Component {
     onSubmit(e) {
         e.preventDefault();
-            var data = {
-                genres: this.refs.genres.state.values,
-                name: this.refs.name.value
-            }
-            this.props.postForm(data);
+        var data = {
+            genres: this.refs.genres.state.values,
+            name: this.refs.name.value
+        }
+        if (data.genres.length === 0) {
+            msg.show('You must select at least one genre!', {
+                type: 'error'
+            });
+            return;
+        }
+        this.props.postForm(data);
     }
 
     render() {
@@ -203,90 +210,6 @@ class PlaylistForm extends Component {
                         <Col md={6}>
                             <div className='form-group'>
                                 <div>
-                                    <strong>Liveness</strong>
-                                </div>
-                                <span>
-                                    <NumericInput
-                                        onChange={this.props.handleChange.bind(this, 'liveLow')}
-                                        min={0.0}
-                                        max={1.0}
-                                        step={0.01}
-                                        precision={2}
-                                        value={this.props.liveLow}
-                                        size={3}
-                                    />
-                                </span>
-                                <span className='slider'>
-                                    <ReactBootstrapSlider
-                                        value={[this.props.liveLow * 100, this.props.liveHigh * 100]}
-                                        change={this.props.handleSliderChange.bind(this, 'liveLow', 'liveHigh', 0.01)}
-                                        step={1}
-                                        min={0}
-                                        max={100}
-                                        range='true'
-                                        tooltip='hide'
-                                        ticks={[0, 100]}
-                                    />
-                                </span>
-                                <span>
-                                    <NumericInput
-                                        onChange={this.props.handleChange.bind(this, 'liveHigh')}
-                                        min={0.0}
-                                        max={1.0}
-                                        step={0.01}
-                                        precision={2}
-                                        value={this.props.liveHigh}
-                                        size={3}
-                                    />
-                                </span>
-                            </div>
-                        </Col>
-                        {/*<Col md={6}>
-                            <div className='form-group'>
-                                <div>
-                                    <strong>Loudness</strong>
-                                </div>
-                                <span>
-                                    <NumericInput
-                                        onChange={this.props.handleChange.bind(this, 'loudLow')}
-                                        min={0.0}
-                                        max={1.0}
-                                        step={0.01}
-                                        precision={2}
-                                        value={this.props.loudLow}
-                                        size={3}
-                                    />
-                                </span>
-                                <span className='slider'>
-                                    <ReactBootstrapSlider
-                                        value={[this.props.loudLow * 100, this.props.loudHigh * 100]}
-                                        change={this.props.handleSliderChange.bind(this, 'loudLow', 'loudHigh', 0.01)}
-                                        step={1}
-                                        min={0}
-                                        max={100}
-                                        range='true'
-                                        tooltip='hide'
-                                        ticks={[0, 100]}
-                                    />
-                                </span>
-                                <span>
-                                    <NumericInput
-                                        onChange={this.props.handleChange.bind(this, 'loudHigh')}
-                                        min={0.0}
-                                        max={1.0}
-                                        step={0.01}
-                                        precision={2}
-                                        value={this.props.loudHigh}
-                                        size={3}
-                                    />
-                                </span>
-                            </div>
-                        </Col>*/}
-                    </Row>
-                    <Row>
-                        <Col md={6}>
-                            <div className='form-group'>
-                                <div>
                                     <strong>Popularity</strong>
                                 </div>
                                 <span>
@@ -371,6 +294,7 @@ class PlaylistForm extends Component {
                                 placeholder='Playlist name'
                                 ref='name'
                             />
+                            <AlertContainer ref={(a) => global.msg = a} {...this.alertOptions} />
                             <Button type="submit">Submit</Button>
                         </Col>
                     </Row>
@@ -389,10 +313,6 @@ PlaylistForm.propTypes = {
     nrgHigh: React.PropTypes.number.isRequired,
     acoustLow: React.PropTypes.number.isRequired,
     acoustHigh: React.PropTypes.number.isRequired,
-    liveLow: React.PropTypes.number.isRequired,
-    liveHigh: React.PropTypes.number.isRequired,
-    loudLow: React.PropTypes.number.isRequired,
-    loudHigh: React.PropTypes.number.isRequired,
     popLow: React.PropTypes.number.isRequired,
     popHigh: React.PropTypes.number.isRequired,
     moodLow: React.PropTypes.number.isRequired,

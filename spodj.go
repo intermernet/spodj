@@ -1,29 +1,35 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
 	"time"
 
-	"encoding/json"
-
+	"github.com/rs/cors"
+	"github.com/satori/go.uuid"
 	"github.com/zmb3/spotify"
 )
 
 const (
-	redirectURI = "https://spodj.intermer.net/callback"
-	chars       = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	dateFormat  = "2006-01-02_03:04:05"
+	dateFormat = "2006-01-02_03:04:05"
 )
 
 var (
-	scope = []string{spotify.ScopeUserReadPrivate, spotify.ScopePlaylistModifyPrivate, spotify.ScopePlaylistReadPrivate}
-	auth  = spotify.NewAuthenticator(redirectURI, scope...)
-	ch    = make(chan *spotify.Client)
-	state = randState(16)
+	port        = ":9090"
+	baseURI     = "http://localhost" + port
+	redirectURI = baseURI + "/callback"
+	scope       = []string{spotify.ScopeUserReadPrivate, spotify.ScopePlaylistModifyPrivate, spotify.ScopePlaylistReadPrivate}
+	auth        = spotify.NewAuthenticator(redirectURI, scope...)
 )
+
+// Client is a wrapped Spotify Client
+type Client struct {
+	a     *APIReq
+	state uuid.UUID
+	*spotify.Client
+}
 
 // APIReq contains the playlist parameters
 type APIReq struct {
@@ -36,10 +42,6 @@ type APIReq struct {
 	NRGHigh    float64  `json:"nrgHigh"`
 	AcoustLow  float64  `json:"acoustLow"`
 	AcoustHigh float64  `json:"acoustHigh"`
-	LiveLow    float64  `json:"liveLow"`
-	LiveHigh   float64  `json:"liveHigh"`
-	LoudLow    float64  `json:"loudLow"`
-	LoudHigh   float64  `json:"loudHigh"`
 	PopLow     int      `json:"popLow"`
 	PopHigh    int      `json:"popHigh"`
 	MoodLow    float64  `json:"moodLow"`
@@ -47,117 +49,81 @@ type APIReq struct {
 	Genres     []string `json:"genres"`
 }
 
-func randState(n int) string {
-	rand.Seed(time.Now().UnixNano())
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = chars[rand.Intn(len(chars))]
-	}
-	return string(b)
-}
-
 func main() {
-	http.HandleFunc("/callback", completeAuth)
-	http.HandleFunc("/api", doAPI)
-	// http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-	// 	log.Println("Got request for:", r.URL.String())
-	// })
-	http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./frontend/"))))
-	log.Fatal(http.ListenAndServe(":9090", nil))
+	mux := http.NewServeMux()
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{baseURI},
+	})
+	client := &Client{
+		a:     &APIReq{},
+		state: uuid.NewV4(),
+	}
+	mux.HandleFunc("/callback", client.completeAuth)
+	mux.HandleFunc("/api", client.doAPI)
+	mux.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./frontend/"))))
+	handler := c.Handler(mux)
+	log.Fatal(http.ListenAndServe(port, handler))
 }
 
-// 	go http.ListenAndServe(":8080", nil)
-
-// 	url := auth.AuthURL(state)
-// 	open.Start(url)
-
-// 	c := <-ch
-// 	client := &Client{
-// 		c,
-// 	}
-
-// 	tracks, err := client.getRecs()
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	plURL, err := client.createPlaylist(tracks)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	open.Start(plURL)
-// }
-
-func doAPI(w http.ResponseWriter, r *http.Request) {
-	decoder := json.NewDecoder(r.Body)
-	var a APIReq
-	err := decoder.Decode(&a)
-	if err != nil {
-		http.Error(w, "Couldn't parse JSON", http.StatusInternalServerError)
-		log.Fatal(err)
-	}
+func (c *Client) doAPI(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	log.Printf("%#v\n", a)
-	js, err := json.MarshalIndent(a, "", "\t")
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(c.a)
+	if err != nil {
+		http.Error(w, "could not decode JSON", http.StatusInternalServerError)
+		log.Printf("could not decode JSON. %s", err)
+	}
+	js, err := json.MarshalIndent(c.a, "", "\t")
 	if err != nil {
 		log.Printf("could not Marshal JSON %s\n", err)
 	}
 	log.Printf(string(js))
 
-	url := auth.AuthURL(state)
+	url := auth.AuthURL(c.state.String())
 	log.Printf("%s\n", url)
-	http.Redirect(w, r, url, http.StatusFound)
-	//open.Start(url)
-	go func() {
-		log.Println("waiting for channel")
-		c := <-ch
-
-		log.Println("received channel")
-		client := &Client{
-			c,
-		}
-
-		log.Println("getting reccomendations")
-		tracks, err := client.getRecs(a)
-		if err != nil {
-			log.Fatalf("could not getRecs %s", err)
-		}
-
-		log.Println("creating playlist")
-		plURL, err := client.createPlaylist(tracks, a.Name)
-		if err != nil {
-			log.Fatalf("could not create playlist %s", err)
-		}
-		log.Printf("%s\n", plURL)
-	}()
-	//open.Start(plURL)
+	log.Println("redirecting...")
+	w.Write([]byte("{\"url\":\"" + url + "\"}"))
 }
 
-func completeAuth(w http.ResponseWriter, r *http.Request) {
-	tok, err := auth.Token(state, r)
+func (c *Client) completeAuth(w http.ResponseWriter, r *http.Request) {
+	log.Println("getting token...")
+	tok, err := auth.Token(c.state.String(), r)
 	if err != nil {
 		http.Error(w, "Couldn't get token", http.StatusForbidden)
 		log.Fatal(err)
 	}
-	if st := r.FormValue("state"); st != state {
+	if st := r.FormValue("state"); st != c.state.String() {
 		http.NotFound(w, r)
-		log.Fatalf("State mismatch: %s != %s\n", st, state)
+		log.Fatalf("State mismatch: %s != %s\n", st, c.state)
 	}
-	client := auth.NewClient(tok)
-	//fmt.Fprintf(w, "<script>window.close();</script>")
-	ch <- &client
-}
+	log.Println("authorizing token...")
+	cl := auth.NewClient(tok)
+	c = &Client{
+		c.a,
+		c.state,
+		&cl,
+	}
 
-// Client is a wrapped Spotify Client
-type Client struct {
-	*spotify.Client
+	log.Println("getting recommendations")
+	pl, err := c.getRecs(c.a)
+	if err != nil {
+		log.Fatalf("could not get recommendations %s", err)
+	}
+
+	log.Println("creating playlist")
+	plURL, err := c.createPlaylist(pl, c.a.Name)
+	if err != nil {
+		log.Printf("could not create playlist %s", err)
+	}
+	log.Printf("%s\n", plURL)
+	http.Redirect(w, r, baseURI, http.StatusFound)
 }
 
 // Playlist contains config and returned values
 type Playlist struct {
 	*spotify.Recommendations
 	seeds spotify.Seeds
-	attrs *spotify.TrackAttributes
-	opts  *spotify.Options
 }
 
 func (client *Client) createPlaylist(pl *Playlist, name string) (string, error) {
@@ -178,7 +144,6 @@ func (client *Client) createPlaylist(pl *Playlist, name string) (string, error) 
 		return "", fmt.Errorf("error creating playlist for user: %s", err)
 	}
 	tracks := pl.Tracks
-	//log.Printf("playlist tracks: %d\n%v\n", len(tracks), tracks)
 	if len(tracks) == 0 {
 		return "", fmt.Errorf("No tracks returned")
 	}
@@ -193,7 +158,7 @@ func (client *Client) createPlaylist(pl *Playlist, name string) (string, error) 
 	return list.ExternalURLs["spotify"], nil
 }
 
-func (client *Client) getRecs(r APIReq) (*Playlist, error) {
+func (client *Client) getRecs(r *APIReq) (*Playlist, error) {
 	seeds := spotify.Seeds{
 		Genres: r.Genres,
 	}
@@ -206,10 +171,6 @@ func (client *Client) getRecs(r APIReq) (*Playlist, error) {
 		MaxEnergy(r.NRGHigh).
 		MinAcousticness(r.AcoustLow).
 		MaxAcousticness(r.AcoustHigh).
-		MinLiveness(r.LiveLow).
-		MaxLiveness(r.LiveHigh).
-		// MinLoudness(r.LoudLow).
-		// MaxLoudness(r.LoudHigh).
 		MinPopularity(r.PopLow).
 		MaxPopularity(r.PopHigh).
 		MinValence(r.MoodLow).
@@ -227,8 +188,6 @@ func (client *Client) getRecs(r APIReq) (*Playlist, error) {
 	pl := &Playlist{
 		recs,
 		seeds,
-		attrs,
-		opts,
 	}
 	return pl, nil
 }
