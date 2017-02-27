@@ -86,6 +86,7 @@ type APIReq struct {
 
 func main() {
 	flag.Parse()
+	log.Printf("%s\n%s\n%#v\n", baseURI, redirectURI, auth)
 	p := strconv.Itoa(port)
 	mux := http.NewServeMux()
 	c := cors.New(cors.Options{
