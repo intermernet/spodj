@@ -6,6 +6,7 @@ class PlaylistSection extends Component{
         return (
             <div className='panel panel-primary'>
                 <div>
+                    <img src="spodj.svg" width={197} height={156} />
                     <h1><strong>SpoDJ</strong></h1>
                 </div>
                 <div className='panel-heading'>
