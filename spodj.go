@@ -126,8 +126,8 @@ type Playlist struct {
 	seeds spotify.Seeds
 }
 
-func (client *Client) createPlaylist(pl *Playlist, name string) (string, error) {
-	user, err := client.CurrentUser()
+func (c *Client) createPlaylist(pl *Playlist, name string) (string, error) {
+	user, err := c.CurrentUser()
 	if err != nil {
 		return "", fmt.Errorf("error getting user: %s", err)
 	}
@@ -139,7 +139,7 @@ func (client *Client) createPlaylist(pl *Playlist, name string) (string, error) 
 		t := time.Now()
 		name = t.Format(dateFormat) + genres
 	}
-	list, err := client.CreatePlaylistForUser(user.ID, name, false)
+	list, err := c.CreatePlaylistForUser(user.ID, name, false)
 	if err != nil {
 		return "", fmt.Errorf("error creating playlist for user: %s", err)
 	}
@@ -151,14 +151,14 @@ func (client *Client) createPlaylist(pl *Playlist, name string) (string, error) 
 	for n, track := range tracks {
 		ids[n] = track.ID
 	}
-	_, err = client.AddTracksToPlaylist(user.ID, list.ID, ids...)
+	_, err = c.AddTracksToPlaylist(user.ID, list.ID, ids...)
 	if err != nil {
 		return "", fmt.Errorf("error adding tracks to playlist: %s", err)
 	}
 	return list.ExternalURLs["spotify"], nil
 }
 
-func (client *Client) getRecs(r *APIReq) (*Playlist, error) {
+func (c *Client) getRecs(r *APIReq) (*Playlist, error) {
 	seeds := spotify.Seeds{
 		Genres: r.Genres,
 	}
@@ -181,7 +181,7 @@ func (client *Client) getRecs(r *APIReq) (*Playlist, error) {
 		Country: &country,
 		Limit:   &limit,
 	}
-	recs, err := client.GetRecommendations(seeds, attrs, opts)
+	recs, err := c.GetRecommendations(seeds, attrs, opts)
 	if err != nil {
 		return nil, err
 	}
