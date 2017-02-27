@@ -24,7 +24,7 @@ var (
 	baseURI     string
 	redirectURI string
 	scope       = []string{spotify.ScopeUserReadPrivate, spotify.ScopePlaylistModifyPrivate, spotify.ScopePlaylistReadPrivate}
-	auth        = spotify.NewAuthenticator(redirectURI, scope...)
+	auth        spotify.Authenticator
 	clMap       = new(ClientMap)
 )
 
@@ -32,6 +32,7 @@ func init() {
 	flag.IntVar(&port, "port", 9090, "TCP/IP Port to listen on")
 	flag.StringVar(&baseURI, "baseuri", "http://localhost", "Base URL to listen on")
 	redirectURI = baseURI + "/callback"
+	auth = spotify.NewAuthenticator(redirectURI, scope...)
 	clMap.list = make(map[string]Client)
 }
 
