@@ -31,8 +31,6 @@ var (
 func init() {
 	flag.IntVar(&port, "port", 9090, "TCP/IP Port to listen on")
 	flag.StringVar(&baseURI, "baseuri", "http://localhost", "Base URL to listen on")
-	redirectURI = baseURI + "/callback"
-	auth = spotify.NewAuthenticator(redirectURI, scope...)
 	clMap.list = make(map[string]Client)
 }
 
@@ -86,11 +84,12 @@ type APIReq struct {
 
 func main() {
 	flag.Parse()
-	log.Printf("%s\n%s\n%#v\n", baseURI, redirectURI, auth)
+	redirectURI = baseURI + "/callback"
+	auth = spotify.NewAuthenticator(redirectURI, scope...)
 	p := strconv.Itoa(port)
 	mux := http.NewServeMux()
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{baseURI},
+		AllowedOrigins: []string{baseURI, baseURI + ":" + p},
 	})
 	mux.HandleFunc("/callback", completeAuth)
 	mux.HandleFunc("/api", doAPI)
