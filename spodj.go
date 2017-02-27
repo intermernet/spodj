@@ -67,7 +67,6 @@ func main() {
 
 func (c *Client) doAPI(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(c.a)
 	if err != nil {
@@ -76,10 +75,10 @@ func (c *Client) doAPI(w http.ResponseWriter, r *http.Request) {
 	}
 	js, err := json.MarshalIndent(c.a, "", "\t")
 	if err != nil {
-		log.Printf("could not Marshal JSON %s\n", err)
+		http.Error(w, "could not marshal JSON", http.StatusInternalServerError)
+		log.Printf("could not marshal JSON %s\n", err)
 	}
 	log.Printf(string(js))
-
 	url := auth.AuthURL(c.state.String())
 	log.Printf("%s\n", url)
 	log.Println("redirecting...")
@@ -90,12 +89,12 @@ func (c *Client) completeAuth(w http.ResponseWriter, r *http.Request) {
 	log.Println("getting token...")
 	tok, err := auth.Token(c.state.String(), r)
 	if err != nil {
-		http.Error(w, "Couldn't get token", http.StatusForbidden)
-		log.Fatal(err)
+		http.Error(w, "could not get token", http.StatusInternalServerError)
+		log.Printf("could not get token %s\n", err)
 	}
 	if st := r.FormValue("state"); st != c.state.String() {
 		http.NotFound(w, r)
-		log.Fatalf("State mismatch: %s != %s\n", st, c.state)
+		log.Fatalf("state mismatch: %s != %s\n", st, c.state)
 	}
 	log.Println("authorizing token...")
 	cl := auth.NewClient(tok)
@@ -104,16 +103,16 @@ func (c *Client) completeAuth(w http.ResponseWriter, r *http.Request) {
 		c.state,
 		&cl,
 	}
-
 	log.Println("getting recommendations")
 	pl, err := c.getRecs(c.a)
 	if err != nil {
+		http.Error(w, "could not get recommendations", http.StatusInternalServerError)
 		log.Fatalf("could not get recommendations %s", err)
 	}
-
 	log.Println("creating playlist")
 	plURL, err := c.createPlaylist(pl, c.a.Name)
 	if err != nil {
+		http.Error(w, "could not create playlist", http.StatusInternalServerError)
 		log.Printf("could not create playlist %s", err)
 	}
 	log.Printf("%s\n", plURL)
