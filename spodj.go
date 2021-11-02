@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/rs/cors"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 	"github.com/zmb3/spotify"
 )
 
@@ -166,19 +166,19 @@ func (c Client) createPlaylist(pl *Playlist, name string) (string, error) {
 		t := time.Now()
 		name = t.Format(dateFormat) + genres
 	}
-	list, err := c.CreatePlaylistForUser(user.ID, name, false)
+	list, err := c.CreatePlaylistForUser(user.ID, name, name, false)
 	if err != nil {
 		return "", fmt.Errorf("error creating playlist for user: %s", err)
 	}
 	tracks := pl.Tracks
 	if len(tracks) == 0 {
-		return "", fmt.Errorf("No tracks returned")
+		return "", fmt.Errorf("no tracks returned")
 	}
 	ids := make([]spotify.ID, len(tracks))
 	for n, track := range tracks {
 		ids[n] = track.ID
 	}
-	_, err = c.AddTracksToPlaylist(user.ID, list.ID, ids...)
+	_, err = c.AddTracksToPlaylist(list.ID, ids...)
 	if err != nil {
 		return "", fmt.Errorf("error adding tracks to playlist: %s", err)
 	}
