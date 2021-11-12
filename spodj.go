@@ -115,8 +115,8 @@ func doAPI(w http.ResponseWriter, r *http.Request) {
 	url := auth.AuthURL(c.state)
 	fmt.Println("Please log in to Spotify by visiting the following page in your browser:", url)
 	w.Write([]byte("{\"url\":\"" + url + "\"}"))
-	cl := <-ch
-	clMap.Set(c.state, cl)
+	//cl := <-ch
+	clMap.Set(c.state, c)
 }
 
 func completeAuth(w http.ResponseWriter, r *http.Request) {
@@ -136,7 +136,7 @@ func completeAuth(w http.ResponseWriter, r *http.Request) {
 		c.state,
 		cl,
 	}
-	ch <- c
+	//ch <- c
 	pl, err := c.getRecs(r.Context(), c.a)
 	if err != nil {
 		http.Error(w, "could not get recommendations", http.StatusInternalServerError)
