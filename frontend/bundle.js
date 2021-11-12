@@ -22432,8 +22432,8 @@
 	            console.log(JSON.stringify(postData));
 	            //this.setState({initialState});
 	            console.log("Doing API Request...\n");
-	            // var request = new Request('https://spodj.intermer.net/api', {
-	            var request = new Request('http://127.0.0.1:9090/api', {
+	            var request = new Request('https://spodj.intermer.net/api', {
+	                //var request = new Request('http://127.0.0.1:9090/api', {
 	                method: 'POST',
 	                mode: 'cors',
 	                body: JSON.stringify(postData),
@@ -22441,7 +22441,6 @@
 	                    'Content-Type': 'application/json'
 	                })
 	            });
-	            //var request = new Request('http://127.0.0.1:9090/api')
 	            fetch(request).then(function (response) {
 	                console.log(response.status);
 	                if (response.status == 200) return response.json();else throw new Error('Something went wrong on api server!');
