@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -12,7 +13,8 @@ import (
 
 	"github.com/rs/cors"
 	uuid "github.com/satori/go.uuid"
-	"github.com/zmb3/spotify"
+	"github.com/zmb3/spotify/v2"
+	spotifyauth "github.com/zmb3/spotify/v2/auth"
 )
 
 const (
@@ -20,12 +22,11 @@ const (
 )
 
 var (
-	port        int
-	baseURI     string
-	redirectURI string
-	scope       = []string{spotify.ScopeUserReadPrivate, spotify.ScopePlaylistModifyPrivate, spotify.ScopePlaylistReadPrivate}
-	auth        spotify.Authenticator
-	clMap       = new(ClientMap)
+	port    int
+	baseURI string
+	scope   = []string{spotifyauth.ScopeUserReadPrivate, spotifyauth.ScopePlaylistModifyPrivate, spotifyauth.ScopePlaylistReadPrivate}
+	auth    *spotifyauth.Authenticator
+	clMap   = new(ClientMap)
 )
 
 func init() {
@@ -84,8 +85,9 @@ type APIReq struct {
 
 func main() {
 	flag.Parse()
-	redirectURI = baseURI + "/callback"
-	auth = spotify.NewAuthenticator(redirectURI, scope...)
+	redirectURI := baseURI + "/callback"
+	//auth = spotify.NewAuthenticator(redirectURI, scope...)
+	auth = spotifyauth.New(spotifyauth.WithRedirectURL(redirectURI), spotifyauth.WithScopes(scope...))
 	p := strconv.Itoa(port)
 	mux := http.NewServeMux()
 	c := cors.New(cors.Options{
@@ -117,7 +119,7 @@ func doAPI(w http.ResponseWriter, r *http.Request) {
 
 func completeAuth(w http.ResponseWriter, r *http.Request) {
 	c := clMap.Get(r.FormValue("state"))
-	tok, err := auth.Token(c.state, r)
+	tok, err := auth.Token(r.Context(), c.state, r)
 	if err != nil {
 		http.Error(w, "could not get token", http.StatusInternalServerError)
 		log.Printf("could not get token %s\n", err)
@@ -126,18 +128,18 @@ func completeAuth(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		log.Fatalf("state mismatch: %s != %s\n", st, c.state)
 	}
-	cl := auth.NewClient(tok)
+	cl := spotify.New(auth.Client(r.Context(), tok))
 	c = Client{
 		c.a,
 		c.state,
-		&cl,
+		cl,
 	}
-	pl, err := c.getRecs(c.a)
+	pl, err := c.getRecs(r.Context(), c.a)
 	if err != nil {
 		http.Error(w, "could not get recommendations", http.StatusInternalServerError)
 		log.Fatalf("could not get recommendations %s", err)
 	}
-	plURL, err := c.createPlaylist(pl, c.a.Name)
+	plURL, err := c.createPlaylist(r.Context(), pl, c.a.Name)
 	if err != nil {
 		http.Error(w, "could not create playlist", http.StatusInternalServerError)
 		log.Printf("could not create playlist %s", err)
@@ -153,8 +155,8 @@ type Playlist struct {
 	seeds spotify.Seeds
 }
 
-func (c Client) createPlaylist(pl *Playlist, name string) (string, error) {
-	user, err := c.CurrentUser()
+func (c Client) createPlaylist(ctx context.Context, pl *Playlist, name string) (string, error) {
+	user, err := c.CurrentUser(ctx)
 	if err != nil {
 		return "", fmt.Errorf("error getting user: %s", err)
 	}
@@ -166,7 +168,7 @@ func (c Client) createPlaylist(pl *Playlist, name string) (string, error) {
 		t := time.Now()
 		name = t.Format(dateFormat) + genres
 	}
-	list, err := c.CreatePlaylistForUser(user.ID, name, name, false)
+	list, err := c.CreatePlaylistForUser(ctx, user.ID, name, name, false, false)
 	if err != nil {
 		return "", fmt.Errorf("error creating playlist for user: %s", err)
 	}
@@ -178,14 +180,14 @@ func (c Client) createPlaylist(pl *Playlist, name string) (string, error) {
 	for n, track := range tracks {
 		ids[n] = track.ID
 	}
-	_, err = c.AddTracksToPlaylist(list.ID, ids...)
+	_, err = c.AddTracksToPlaylist(ctx, list.ID, ids...)
 	if err != nil {
 		return "", fmt.Errorf("error adding tracks to playlist: %s", err)
 	}
 	return list.ExternalURLs["spotify"], nil
 }
 
-func (c Client) getRecs(r *APIReq) (*Playlist, error) {
+func (c Client) getRecs(ctx context.Context, r *APIReq) (*Playlist, error) {
 	seeds := spotify.Seeds{
 		Genres: r.Genres,
 	}
@@ -202,13 +204,12 @@ func (c Client) getRecs(r *APIReq) (*Playlist, error) {
 		MaxPopularity(r.PopHigh).
 		MinValence(r.MoodLow).
 		MaxValence(r.MoodHigh)
-	country := "AU"
 	limit := 10
-	opts := &spotify.Options{
-		Country: &country,
-		Limit:   &limit,
+	opts := []spotify.RequestOption{
+		spotify.Country(spotify.CountryAustralia),
+		spotify.Limit(limit),
 	}
-	recs, err := c.GetRecommendations(seeds, attrs, opts)
+	recs, err := c.GetRecommendations(ctx, seeds, attrs, opts...)
 	if err != nil {
 		return nil, err
 	}
