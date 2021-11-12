@@ -87,7 +87,6 @@ type APIReq struct {
 func main() {
 	flag.Parse()
 	redirectURI := baseURI + "/callback"
-	//auth = spotify.NewAuthenticator(redirectURI, scope...)
 	auth = spotifyauth.New(spotifyauth.WithRedirectURL(redirectURI), spotifyauth.WithScopes(scope...))
 	p := strconv.Itoa(port)
 	mux := http.NewServeMux()
@@ -114,9 +113,10 @@ func doAPI(w http.ResponseWriter, r *http.Request) {
 		log.Printf("could not decode JSON. %s", err)
 	}
 	url := auth.AuthURL(c.state)
+	//fmt.Println("Please log in to Spotify by visiting the following page in your browser:", url)
+	w.Write([]byte("{\"url\":\"" + url + "\"}"))
 	cl := <-ch
 	clMap.Set(c.state, cl)
-	w.Write([]byte("{\"url\":\"" + url + "\"}"))
 }
 
 func completeAuth(w http.ResponseWriter, r *http.Request) {
