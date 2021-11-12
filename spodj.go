@@ -27,7 +27,6 @@ var (
 	scope   = []string{spotifyauth.ScopeUserReadPrivate, spotifyauth.ScopePlaylistModifyPrivate, spotifyauth.ScopePlaylistReadPrivate}
 	auth    *spotifyauth.Authenticator
 	clMap   = new(ClientMap)
-	ch      = make(chan Client)
 )
 
 func init() {
@@ -112,11 +111,9 @@ func doAPI(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "could not decode JSON", http.StatusInternalServerError)
 		log.Printf("could not decode JSON. %s", err)
 	}
-	url := auth.AuthURL(c.state)
-	fmt.Println("Please log in to Spotify by visiting the following page in your browser:", url)
-	w.Write([]byte("{\"url\":\"" + url + "\"}"))
-	//cl := <-ch
 	clMap.Set(c.state, c)
+	url := auth.AuthURL(c.state)
+	w.Write([]byte("{\"url\":\"" + url + "\"}"))
 }
 
 func completeAuth(w http.ResponseWriter, r *http.Request) {
@@ -136,7 +133,6 @@ func completeAuth(w http.ResponseWriter, r *http.Request) {
 		c.state,
 		cl,
 	}
-	//ch <- c
 	pl, err := c.getRecs(r.Context(), c.a)
 	if err != nil {
 		http.Error(w, "could not get recommendations", http.StatusInternalServerError)
