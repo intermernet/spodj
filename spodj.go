@@ -113,7 +113,7 @@ func doAPI(w http.ResponseWriter, r *http.Request) {
 		log.Printf("could not decode JSON. %s", err)
 	}
 	url := auth.AuthURL(c.state)
-	//fmt.Println("Please log in to Spotify by visiting the following page in your browser:", url)
+	fmt.Println("Please log in to Spotify by visiting the following page in your browser:", url)
 	w.Write([]byte("{\"url\":\"" + url + "\"}"))
 	cl := <-ch
 	clMap.Set(c.state, cl)
